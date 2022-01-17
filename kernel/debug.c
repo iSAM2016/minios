@@ -2,10 +2,13 @@
 #include "print.h"
 #include "interrupt.h"
 
-/* 打印文件名 行号 函数名 条件并使程序悬停*/
-void painc_spin(char *filename, int line, const char *func, const char *condition)
+/* 打印文件名,行号,函数名,条件并使程序悬停 */
+void panic_spin(char *filename,
+                int line,
+                const char *func,
+                const char *condition)
 {
-    intr_disabled(); // 因为有时候会单独调用 panic_spin 所以在此处关闭中断
+    intr_disable(); // 因为有时候会单独调用panic_spin,所以在此处关中断。
     put_str("\n\n\n!!!!! error !!!!!\n");
     put_str("filename:");
     put_str(filename);
@@ -20,5 +23,5 @@ void painc_spin(char *filename, int line, const char *func, const char *conditio
     put_str((char *)condition);
     put_str("\n");
     while (1)
-        ; // 代码悬停
-};
+        ;
+}
