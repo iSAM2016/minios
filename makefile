@@ -50,7 +50,7 @@ $(BUILD_DIR)/kernel.bin: $(OBJS)
 .PHONY : mk_dir hd clean all
 # 伪目标mk_dir 用来建立build 目录，
 mk_dir:
-	if [[ ! -d $(BUILD_DIR) ]];then mkdir $(BUILD_DIR);fi
+	if [ ! -d $(BUILD_DIR) ];then mkdir $(BUILD_DIR);fi
 # 伪目标 hd 是将 build/kernel.bin 写入硬盘，执行 make hd 是将文件写入硬盘。
 hd:
 	dd if=$(BUILD_DIR)/kernel.bin \
