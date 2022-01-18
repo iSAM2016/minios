@@ -8,9 +8,9 @@ LD = ld
 LIB = -I lib/ -I lib/kernel/ -I lib/user/ -I kernel/ -I device/
 ASFLAGS = -f elf
 #  CFLAGS 中定义了-fno-builtin， 它是告诉编译器不要采用内部函数，因为咱们在以后实现中会自定义与内部函数同名的函数，如果不添加此选项的话， 编译时 gcc 会提示与内部函数冲突。-Wstrict-prototypes 选项要求函数声明中必须有参数类型，否则编译时发出警告。-Wmissing-prototypes 选项要求函数必须有声明，否则编译时发出警告。
-# 增加-没2
+# 增加-m32 指定gcc在32 位下进行编译
 CFLAGS = -m32 -Wall $(LIB) -c -fno-builtin -fno-stack-protector -W #-Wstrict-prototypes -Wmissing-prototypes 
-# 增加 -m elf_i386
+# 增加 -m elf_i386  ELF for i386 — 32-bit i386 binaries
 LDFLAGS = -m elf_i386 -Ttext $(ENTRY_POINT) -e main -Map $(BUILD_DIR)/kernel.map
 # 存储所有的目标文件名，以后每增加一个目标文件，直接在此变量中增加就行了，此变量用在链接阶段。位置顺序上最好还是调用在前，实现在后。
 OBJS = $(BUILD_DIR)/main.o $(BUILD_DIR)/init.o $(BUILD_DIR)/interrupt.o \
@@ -55,7 +55,7 @@ mk_dir:
 # 伪目标 hd 是将 build/kernel.bin 写入硬盘，执行 make hd 是将文件写入硬盘。
 hd:
 	dd if=$(BUILD_DIR)/kernel.bin \
-           of=/home/work/my_workspace/bochs/hd60M.img \
+           of=/home/isam2016/opt/bochs/hd60M.img \
            bs=512 count=200 seek=9 conv=notrunc
 # 伪目标 clean 是将 build 目录下的文件清空。为稳妥起见，先成功进入 build 目录后再执行“rm –f ./*”删除此目录下的所有文件，避免错删文件。执行 make clean 将会清空 build 目录下的文件。
 clean:
