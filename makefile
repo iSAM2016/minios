@@ -7,10 +7,11 @@ CC = gcc
 LD = ld
 LIB = -I lib/ -I lib/kernel/ -I lib/user/ -I kernel/ -I device/
 ASFLAGS = -f elf
-#  CFLAGS 中定义了-fno-builtin， 它是告诉编译器不要采用内部函数，因为咱们在以后实现中会自定义与内部函数同名的函数，如果不添加此选项的话， 编译时 gcc 会提示与内部函数冲突。-Wstrict-prototypes 选项要求函数声明中必须有参数类型，否则编译时发出警告。-Wmissing-prototypes 选项要求函数必须有声明，否则编译时发出警告。其他内容不再细说。
-CFLAGS = -Wall $(LIB) -c -fno-builtin -W -Wstrict-prototypes \
-         -Wmissing-prototypes 
-LDFLAGS = -Ttext $(ENTRY_POINT) -e main -Map $(BUILD_DIR)/kernel.map
+#  CFLAGS 中定义了-fno-builtin， 它是告诉编译器不要采用内部函数，因为咱们在以后实现中会自定义与内部函数同名的函数，如果不添加此选项的话， 编译时 gcc 会提示与内部函数冲突。-Wstrict-prototypes 选项要求函数声明中必须有参数类型，否则编译时发出警告。-Wmissing-prototypes 选项要求函数必须有声明，否则编译时发出警告。
+# 增加-没2
+CFLAGS = -m32 -Wall $(LIB) -c -fno-builtin -fno-stack-protector -W #-Wstrict-prototypes -Wmissing-prototypes 
+# 增加 -m elf_i386
+LDFLAGS = -m elf_i386 -Ttext $(ENTRY_POINT) -e main -Map $(BUILD_DIR)/kernel.map
 # 存储所有的目标文件名，以后每增加一个目标文件，直接在此变量中增加就行了，此变量用在链接阶段。位置顺序上最好还是调用在前，实现在后。
 OBJS = $(BUILD_DIR)/main.o $(BUILD_DIR)/init.o $(BUILD_DIR)/interrupt.o \
       $(BUILD_DIR)/timer.o $(BUILD_DIR)/kernel.o $(BUILD_DIR)/print.o \
