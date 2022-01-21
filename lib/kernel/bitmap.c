@@ -27,7 +27,6 @@ bool bitmap_scan_test(struct bitmap *btmp, uint32_t bit_idx)
 {
     uint32_t byte_idx = bit_idx / 8; // 向下取整用于索引数组下标
     uint32_t bit_odd = bit_idx % 8;  // 取余用于索引数组内的位
-    //  TODO:原理
     return (btmp->bits[byte_idx] & (BITMAP_MASK << bit_odd));
 }
 /**
@@ -56,7 +55,6 @@ int bitmap_scan(struct bitmap *btmp, uint32_t cnt)
     // 此时已经找到了第一个空闲的字节。 但是不确定在哪个比特位
     // 若在位图数组内找到了空闲位 在该字节内 逐位置的对比 返回空闲位置的索引
     int idx_bit = 0;
-    //  TODO: 原理
     while ((uint8_t)(BITMAP_MASK << idx_bit) & btmp->bits[idx_byte])
     {
         idx_bit++;
@@ -112,12 +110,26 @@ void bitmap_set(struct bitmap *btmp, uint32_t bit_idx, int8_t value)
     // 一般都会使用这个0x1 这样的数对字节中的位操作 将1 任意移动后在取反，或者先取反在位移， 可用来对位置0 操作
     if (value)
     { // 如果为value 为1
-        // TODO: 技巧  按字节进行处理
-        btmp->bits[byte_idx] != (BITMAP_MASK << bit_odd);
+        btmp->bits[byte_idx] |= (BITMAP_MASK << bit_odd);
     }
     else
-    // TODO: 技巧  按字节进行处理
     { // 如果为0 按字节进行处理 更改其中的一个值
         btmp->bits[byte_idx] &= ~(BITMAP_MASK << bit_odd);
     }
 }
+
+// 1. 字节指定位置数值为1
+//  将23的3位值为1
+//  采用左移和按位与的操作
+// a:23(00010111)
+// b:1(00000001) 左移3位 00001000
+// a|b: 00010111|00001000 = 00011111
+// 用c 语言表示 a |= (1<3)
+
+// 2. 字节指定位置为0
+//  将23的4位值为0
+//  采用左移和取反 和按位与的操作
+// a:23(00010111)
+// b:1(00000001) 左移4位 00010000 在取反11101111
+// a&b: 00010111|11101111 = 00010111
+// 用c 语言表示 a&= ~(1<4)
