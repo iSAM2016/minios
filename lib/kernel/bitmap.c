@@ -10,7 +10,7 @@
  *  根据位图的字节大小 btmp_bytes_len 将位图的每一个字节用 0 来填充。
  * @param btmp 位图指针 
  */
-void binmap_init(struct bitmap *btmp)
+void bitmap_init(struct bitmap *btmp)
 {
     // 内存数据的初始化 填充的是0
     memset(btmp->bits, 0, btmp->btmp_tytes_len);
