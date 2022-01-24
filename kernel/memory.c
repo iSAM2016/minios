@@ -6,7 +6,7 @@
 #define PG_SIZE 4096
 /******************* 位图地址 *******************
  *  和线程有关系TODO:
- * 因为oxc009f000 是内核主线程栈顶， 0xc009e000 是内核主线程的pcd
+ * 因为0xc009f000 是内核主线程栈顶， 0xc009e000 是内核主线程的pcd
  */
 #define MEM_BITMAP_BASE 0xc009a000
 /**
@@ -51,12 +51,11 @@ static void mem_pool_init(uint32_t all_mem)
 
     // 把可用的物页数分为两半。
     // 用来存储分配给内核的空闲物理页
-    // TODO: 内核空间已经被分配 为啥还要预留 分配给内核的空闲物理页
     uint16_t kernel_free_pages = all_free_pages / 2;
     // 用户内存池的空闲物理页数量
     uint16_t user_free_pages = all_free_pages - kernel_free_pages;
 
-    // 记录位图的长度 一个比特代表一个页
+    // 记录位图的长度 一个比特代表一个页 一个字节8个页
     uint32_t kbm_length = kernel_free_pages / 8; // 占用字节数量
     // 用户内存池位图的长度
     uint32_t ubm_length = user_free_pages / 8; //占用字节数量
@@ -64,9 +63,10 @@ static void mem_pool_init(uint32_t all_mem)
     // 记录内核物理内存池的其实地址
     uint32_t kp_start = used_mem;
     // 记录用户物理内存池的其实地址
-    uint32_t up_start = kp_start + kernel_free_pages + PG_SIZE;
+    uint32_t up_start = kp_start + kernel_free_pages * PG_SIZE;
 
     /********************************************** 开始给内存池赋值 **********************/
+    //本内存池所管理物理内存的起始地址
     kernel_pool.phy_addr_start = kp_start;
     user_pool.phy_addr_start = up_start;
     // 计算格子内存池中的容量字节数
