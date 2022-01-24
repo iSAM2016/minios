@@ -116,8 +116,7 @@ static void mem_pool_init(uint32_t all_mem)
     /**
      * 位图的数组指向一块为使用的内存， 目前定位在内核内存池和用户内存池之外
      */
-    kernel_vaddr.vaddr_bitmap.bits = \ 
-    (void *)(MEM_BITMAP_BASE + kbm_length + ubm_length);
+    kernel_vaddr.vaddr_bitmap.bits = (void *)(MEM_BITMAP_BASE + kbm_length + ubm_length);
     // 虚拟地址池的其实地址为 K_HEAP_START
     kernel_vaddr.vaddr_start = K_HEAP_START;
     bitmap_init(&kernel_vaddr.vaddr_bitmap);

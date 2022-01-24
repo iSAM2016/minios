@@ -1,7 +1,7 @@
 //  虚拟地址结构
 #ifndef __KERNEL_MEMORY_H
 #define __KERNEL_MEMORY_H
-#include "stdint.h”
+#include "stdint.h"
 #include "bitmap.h"
 // 虚拟地址池 ，用于虚拟地址管理
 struct virtual_addr
