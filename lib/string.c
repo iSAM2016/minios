@@ -12,11 +12,11 @@
  */
 void memset(void *dst_, uint8_t value, uint32_t size)
 {
-    ASSERT(dst_ == null);
+    ASSERT(dst_ == NULL);
     uint8_t *des = (uint8_t *)dst_;
     while (size-- > 0)
     {
-        *dst++ = value;
+        *des++ = value;
     }
 }
 /**
