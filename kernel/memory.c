@@ -1,11 +1,16 @@
 #include "memory.h"
 #include "stdint.h"
 #include "print.h"
+#include "bitmap.h"
+#include "global.h"
+#include "debug.h"
+#include "string.h"
 
 // 定义了一个页面的尺寸 4096 就是4kb
 #define PG_SIZE 4096
 /******************* 位图地址 *******************
- *  和线程有关系TODO:
+ * 内存位图的基址
+ * 虚拟地址
  * 因为0xc009f000 是内核主线程栈顶， 0xc009e000 是内核主线程的pcd
  */
 #define MEM_BITMAP_BASE 0xc009a000
@@ -17,6 +22,9 @@
  * 在 loader 中我们已经通过设置页表把虚拟地址 0xc0000000～0xc00fffff 映射到了物理地址 0x00000000～ 0x000fffff（低端 1MB 的内存） ，故我们为了让虚拟地址连续，将堆的起始虚拟地址设为 0xc0100000。
  */
 #define K_HEAP_START 0xc0100000
+//  TODO:
+#define PDE_IDX(addr) ((addr & 0xffc0000) >> 22)  // 页目录 返回虚拟地址的高十位
+#define PTX_IDX(addr) ((addr & 0x003ff000) >> 12) // 页表项 返回虚拟地址的中间10 位
 
 //  内存池结构 ，主要生成两个实例，用于管理内核内存池和用户内存池
 struct pool
@@ -27,7 +35,7 @@ struct pool
 };
 
 struct pool kernel_pool, user_pool; // 生成内核内存池和用户内存池
-struct virtual_addr kernel_vaddr;   //此机构用来给内核分配虚拟地址
+struct virtual_addr kernel_vaddr;   //此结构用来给内核分配虚拟地址
 /**
  * @brief 初始化物理内存池的相关结构
  * 
@@ -109,18 +117,85 @@ static void mem_pool_init(uint32_t all_mem)
     bitmap_init(&kernel_pool.pool_bitmap);
     bitmap_init(&user_pool.pool_bitmap);
     /**
-     * 下面初始化内核虚拟地址的位图  按实际五路内存大小生成数组
+     * ********************************* 下面初始化内核虚拟地址的位图  按实际五路内存大小生成数组***************************8
      */
-    kernel_vaddr.vaddr_bitmap.btmp_tytes_len = kbm_length;
     // 用于维护内核堆的虚拟地址，所以要和内核内存池大小一致
+    kernel_vaddr.vaddr_bitmap.btmp_tytes_len = kbm_length;
     /**
      * 位图的数组指向一块为使用的内存， 目前定位在内核内存池和用户内存池之外
      */
     kernel_vaddr.vaddr_bitmap.bits = (void *)(MEM_BITMAP_BASE + kbm_length + ubm_length);
-    // 虚拟地址池的其实地址为 K_HEAP_START
-    kernel_vaddr.vaddr_start = K_HEAP_START;
+    // 内核虚拟地址池的起始地址为 K_HEAP_START
+    kernel_vaddr.vaddr_start = K_HEAP_START; //0xc0100000
     bitmap_init(&kernel_vaddr.vaddr_bitmap);
     put_str("  mem_pool_init done\n");
+}
+/**
+ * @brief pf表示的虚拟内存池中申请pg_cnt个虚拟页, 成功则返回虚拟页的起始地址，失败则返回NULL
+ * 
+ * @param pf 内存池标记
+ * @param pg_cnt  申请的页数
+ * @return void* 
+ */
+static void *vaddr_get(enum pool_flags pf, uint32_t pg_cnt)
+{
+    int vaddr_start = 0,    //存储分配的起始虚拟地址
+        bit_idx_start = -1; //空闲位在位图内的下标
+    uint32_t cnt = 0;
+    if (pf == PF_KERNEL) //  PF_KERNEL=1 内核内存池 TODO: enmu 使用
+    {
+        // 在位图中连续申请cnt 个位置
+        bit_idx_start = bitmap_scan(&kernel_vaddr.vaddr_bitmap, pg_cnt);
+        if (bit_idx_start == -1)
+        {
+            return NULL;
+        }
+        while (cnt < pg_cnt)
+        {
+            //将图btmp的bit_idx 位设置为1
+            bitmap_set(&kernel_vaddr.vaddr_bitmap, bit_idx_start + cnt++, 1);
+        }
+        // 用虚拟内存池的起始地址 + 加上起始位索引*8
+        vaddr_start = kernel_vaddr.vaddr_start + bit_idx_start * PG_SIZE;
+    }
+    else
+    {
+        // 用户内存池
+    }
+    // 虚拟页的的起始地址
+    return (void *)vaddr_start;
+}
+/**
+ * @brief 得到虚拟地址vaddr 对应的pde(页目录)的虚拟指针
+ * 
+ * @param vaddr  返回的也是虚拟地址
+ * @return uint32_t* 
+ */
+uint32_t *pde_ptr(uint32_t vaddr)
+{
+    // 为啥是0xfffff000请看手绘图
+    //在 loader.S 中创建页表的时候，在最后一个页目录项里写的是页目录表自己的物理地址，目的就是为了通过此页目录项编辑页表
+    uint32_t *pde = (uint32_t *)((0xfffff000) + PDE_IDX(vaddr) * 4); //\*4 固定算法
+    return pde;
+}
+/**
+ * @brief 在m_pool 指向的物理内存池中分配一个物理页，
+ * 成功返回页框的物理地址，失败则返回NULL
+ * 
+ * @param m_pool 
+ * @return void* 
+ */
+static void *palloc(struct pool *m_pool)
+{
+    /* 扫描或设置位图要保证原子操作*/
+    int bit_idx = bitmap_scan(&m_pool->pool_bitmap, 1); // 找到一个物理页面
+    if (bit_idx == -1)
+    {
+        return NULL;
+    }
+    bitmap_set(&m_pool->pool_bitmap, bit_idx, 1); // 将次位置bit_idx置为1
+    uint32_t page_phyaddr = ((bit_idx * PG_SIZE) + m_pool->phy_addr_start);
+    return (void *)page_phyaddr;
 }
 
 /* 内存管理部分初始化入口 */

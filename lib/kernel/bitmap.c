@@ -34,7 +34,7 @@ bool bitmap_scan_test(struct bitmap *btmp, uint32_t bit_idx)
  * 
  * @param btmp 位图指针
  * @param cnt 位的个数
- * @return int 
+ * @return int  空闲位在位图内的下标
  */
 int bitmap_scan(struct bitmap *btmp, uint32_t cnt)
 {
