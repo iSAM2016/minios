@@ -236,6 +236,7 @@ static void page_table_add(void *_vaddr, void *_page_phyaddr)
         ASSERT(!(*pte & 0x00000001)); //此时pte应该不存在
         if (!(*pte & 0x00000001))
         {
+            //  TODO:实现
             *pte = (page_phyaddr | PG_US_U | PG_RW_W | PG_P_1); //创建pte
         }
         else
@@ -260,7 +261,13 @@ static void page_table_add(void *_vaddr, void *_page_phyaddr)
         *pte = (page_phyaddr | PG_US_U | PG_RW_W | PG_P_1);
     }
 }
-
+/**
+ * @brief 分配pg_cnt个页空间 成功则返回起始虚拟地址 失败返回NULL 
+ * 
+ * @param pf 
+ * @param pg_cnt 
+ * @return void* 
+ */
 void *malloc_page(enum pool_flags pf, uint32_t pg_cnt)
 {
 
