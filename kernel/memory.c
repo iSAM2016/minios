@@ -1,5 +1,5 @@
 #include "memory.h"
-// #include "bitmap.h"
+#include "bitmap.h"
 #include "stdint.h"
 #include "global.h"
 #include "debug.h"
