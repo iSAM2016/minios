@@ -1,9 +1,9 @@
 #include "memory.h"
-#include "stdint.h"
-#include "print.h"
 #include "bitmap.h"
+#include "stdint.h"
 #include "global.h"
 #include "debug.h"
+#include "print.h"
 #include "string.h"
 
 // 定义了一个页面的尺寸 4096 就是4kb
