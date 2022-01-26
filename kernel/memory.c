@@ -24,7 +24,7 @@
 #define K_HEAP_START 0xc0100000
 
 #define PDE_IDX(addr) ((addr & 0xffc00000) >> 22) // 页目录 返回虚拟地址的高十位
-#define PTX_IDX(addr) ((addr & 0x003ff000) >> 12) // 页表项 返回虚拟地址的中间10 位
+#define PTE_IDX(addr) ((addr & 0x003ff000) >> 12) // 页表项 返回虚拟地址的中间10 位
 
 //  内存池结构 ，主要生成两个实例，用于管理内核内存池和用户内存池
 struct pool
