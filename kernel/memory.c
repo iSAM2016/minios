@@ -261,7 +261,7 @@ static void page_table_add(void *_vaddr, void *_page_phyaddr)
     }
 }
 
-static void *malloc_page(enum pool_flags pf, uint32_t pg_cnt)
+void *malloc_page(enum pool_flags pf, uint32_t pg_cnt)
 {
 
     ASSERT(pg_cnt > 0 && pg_cnt < 3840);
