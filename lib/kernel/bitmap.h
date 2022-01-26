@@ -1,6 +1,6 @@
 //  位图的结构
 #ifndef __LIB_KERNEL_BITMAP_H
-#define __LIB_KERNEL_BITMAP_Ha
+#define __LIB_KERNEL_BITMAP_H
 #include "global.h"
 #define BITMAP_MASK 1 // 常量 f用来在位图中逐位判断。 通过按位与&来判断是否为1
 // 位图的结构
