@@ -1,8 +1,8 @@
 //  虚拟地址结构
 #ifndef __KERNEL_MEMORY_H
 #define __KERNEL_MEMORY_H
-// #include "stdint.h"
-// #include "bitmap.h"
+#include "stdint.h"
+#include "bitmap.h"
 /* 内存池标记，用于判断用哪个内存池 */
 enum pool_flags
 {
