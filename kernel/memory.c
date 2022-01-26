@@ -166,7 +166,7 @@ static void *vaddr_get(enum pool_flags pf, uint32_t pg_cnt)
     return (void *)vaddr_start;
 }
 //得到虚拟地址 vaddr 对应的 pte (页表)指针
-static uint32_t *pte_ptr(uint32_t vaddr)
+uint32_t *pte_ptr(uint32_t vaddr)
 {
     // 先访问到页表自己
     // 再用页目录项 pde（页目录内页表的索引）作为pte的索引访问到页表
