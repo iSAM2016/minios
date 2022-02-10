@@ -236,7 +236,7 @@ static void page_table_add(void *_vaddr, void *_page_phyaddr)
         ASSERT(!(*pte & 0x00000001)); //此时pte应该不存在
         if (!(*pte & 0x00000001))
         {
-            //  TODO:实现
+            //将页表赋值
             *pte = (page_phyaddr | PG_US_U | PG_RW_W | PG_P_1); //创建pte
         }
         else
@@ -249,6 +249,7 @@ static void page_table_add(void *_vaddr, void *_page_phyaddr)
     {
         //页表中用到的页框一律从内核空间分配
         uint32_t pde_phyaddr = (uint32_t)palloc(&kernel_pool);
+        // 页目录项赋值
         *pde = (pde_phyaddr | PG_US_U | PG_RW_W | PG_P_1);
 
         //分配到的物理页地址pde_phyaddr对应的物理 内存清0
@@ -258,6 +259,7 @@ static void page_table_add(void *_vaddr, void *_page_phyaddr)
         memset((void *)((int)pte & 0xfffff000), 0, PG_SIZE);
 
         ASSERT(!(*pte & 0x00000001));
+        // 页表项赋值
         *pte = (page_phyaddr | PG_US_U | PG_RW_W | PG_P_1);
     }
 }
