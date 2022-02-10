@@ -5,7 +5,7 @@ ENTRY_POINT = 0xc0001500
 AS = nasm
 CC = gcc
 LD = ld
-LIB = -I lib/ -I lib/kernel/ -I lib/user/ -I kernel/ -I device/
+LIB = -I lib/ -I lib/kernel/ -I lib/user/ -I kernel/ -I device/ -I thread/
 ASFLAGS = -f elf
 #  CFLAGS 中定义了-fno-builtin， 它是告诉编译器不要采用内部函数，因为咱们在以后实现中会自定义与内部函数同名的函数，如果不添加此选项的话， 编译时 gcc 会提示与内部函数冲突。-Wstrict-prototypes 选项要求函数声明中必须有参数类型，否则编译时发出警告。-Wmissing-prototypes 选项要求函数必须有声明，否则编译时发出警告。
 # 增加-m32 指定gcc在32 位下进行编译
