@@ -5,10 +5,27 @@
 #include "memory.h"
 
 #define PG_SIZE 4096
+struct task_struct *main_thread;     // 主线程PCB
+struct list thread_ready_list;       // 就绪队列
+struct list thread_all_list;         // 所有任队列
+static struct list_elem *thread_tag; // 用于保存队列中的线程节点
+
+extern void switch_to(struct task_struct *cur, struct task_struct *next);
+/* 获取当前线程pcb 指针*/
+struct task_struct *running_thread()
+{
+    uint32_t esp;
+    asm("mov %%esp, %0"
+        : "=g"(esp));
+    /* 取esp 整数部分 即pcb 起始地址*/
+    return (struct task_struct *)(esp & 0xffff000);
+}
 
 /* 由kernel_thread去执行function(func_arg) */
 static void kernel_thread(thread_func *function, void *func_arg)
 {
+    /* 执行function 前要开中断，避免以后的始终中断被屏蔽，而无法调度其他线程*/
+    intr_enable();
     function(func_arg);
 }
 
@@ -32,6 +49,7 @@ void init_thread(struct task_struct *pthread, char *name, int prio)
 {
     memset(pthread, 0, sizeof(*pthread));
     strcpy(pthread->name, name);
+    // 修改状态信息
     pthread->status = TASK_RUNNING;
     pthread->priority = prio;
     /* self_kstack是线程自己在内核态下使用的栈顶地址 */
